@@ -1,7 +1,8 @@
 {
   "name": "Diario",
   "short_name": "Diario",
-  "start_url": "./index.html",
+  "start_url": "/Actividades/",
+  "scope": "/Actividades/",
   "display": "standalone",
   "background_color": "#1c1c1e",
   "theme_color": "#1c1c1e",
