@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*{box-sizing:border-box}
+body{
+ margin:12px;
+ font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial;
+ background:#f2f2f7;color:#111
+}
+@media(prefers-color-scheme:dark){
+ body{background:#1c1c1e;color:#fff}
+}
+/* Títulos de secciones */
+h2{text-align:center;margin:10px 0 8px;font-size:16px;font-weight:800}
+/* Grid */
+.list{
+ display:grid;
+ grid-template-columns:repeat(7,1fr);
+ gap:8px;
+ margin-bottom:16px
+}
+/* Botones */
+.card{
+ height:40px;
+ border-radius:10px;
+ border:1.5px solid var(--c,#d1d1d6);
+ background:#fff;
+ font-size:15px;
+ font-weight:900;
+ letter-spacing:.03em;
+ color:inherit;
+ -webkit-appearance:none;
+ user-select:none;
+}
+.card:active{background:#e5e5ea}
+@media(prefers-color-scheme:dark){
+ .card{background:#2c2c2e;border-color:var(--c,#3a3a3c)}
+ .card:active{background:#3a3a3c}
+}
+/* Modal minutos */
+#minModal{
+ position:fixed;
+ inset:0;
+ background:rgba(0,0,0,.45);
+ display:none;
+ align-items:center;
+ justify-content:center;
+ z-index:10000;
+ -webkit-user-select:none;
+ user-select:none;
+}
+#minModal.show{display:flex}
+#minModal .box{
+ width:260px;
+ background:#fff;
+ border-radius:14px;
+ padding:14px;
+ text-align:center
+}
+@media(prefers-color-scheme:dark){
+ #minModal .box{background:#2c2c2e}
+}
+#minTitle{font-weight:700;margin-bottom:10px}
+#minInput{
+ width:100%;
+ height:42px;
+ font-size:18px;
+ text-align:center;
+ border-radius:10px;
+ border:1px solid #d1d1d6;
+ margin-bottom:12px;
+ -webkit-user-select:text;
+ user-select:text;
+}
+@media(prefers-color-scheme:dark){
+ #minInput{background:#1c1c1e;color:#fff;border-color:#3a3a3c}
+}
+.actions{
+ display:flex;
+ gap:8px
+}
+.actions button{
+ flex:1;
+ height:40px;
+ border-radius:10px;
+ font-weight:700
+}
+</style>
+</head>
+<body>
+<div id="menu"></div>
+<!-- Modal minutos -->
+<div id="minModal">
+<div class="box">
+<div id="minTitle"></div>
+<input id="minInput" type="tel" inputmode="numeric" pattern="[0-9]*" placeholder="Minutos">
+<div class="actions">
+<button id="minCancel">Cancelar</button>
+<button id="minOk">OK</button>
+</div>
+</div>
+</div>
+<script>
+const ATAJO = "Diario";
+const LONG_PRESS_MS = 450;
+const DATA = [
+ {n:"Personal",c:"#8B0000",i:[
+   ["XX","ESCRIBIR"],
+   ["??","???"],
+   ["BAF","Bañarme y afeitarme"],
+   ["CM","Cambiarme"],
+   ["DM","Dormir"],
+   ["EC","Empacar comida"],
+   ["GYM","Gimnasio"],
+   ["LH","Locha"],
+   ["OG","Organizarme"],
+   ["RP","Revisar PC"],
+   ["ST","Siesta"]
+ ]},
+ {n:"Desplazamiento",c:"#00008B",i:[
+   ["CMI","Casa - MIR"],
+   ["CP","Casa - PCC"],
+   ["IPA","Ir por almuerzo"],
+   ["IPD","Ir por desayuno"],
+   ["IPE","Ir por empanadas"],
+   ["IT","Ir a la tienda"],
+   ["MC","MIR - casa"],
+   ["PC","PCC - casa"]
+ ]},
+ {n:"Niñas",c:"#FFD700",i:[
+   ["CN","Comida niñas"],
+   ["JN","Jugar con las niñas"],
+   ["OP","Organizar pollo"],
+   ["SN","Sacar niñas"],
+   ["SNI","Saludar niñas"]
+ ]},
+ {n:"Cocina",c:"#008000",i:[
+   ["AC","Ayudar en la cocina"],
+   ["AL","Almorzar"],
+   ["CO","Comer"],
+   ["DY","Desayunar"],
+   ["LC","Lavar cocina"],
+   ["LP","Lavar platos"],
+   ["SA","Servir almuerzo"],
+   ["SC","Servir comida"],
+   ["SD","Servir desayuno"]
+ ]},
+ {n:"Hogar",c:"#FF8C00",i:[
+   ["BA","Barrer afuera"],
+   ["BR","Barrer"],
+   ["D1","D1"],
+   ["GM","Guardar mercado"],
+   ["GR","Guardar ropa"],
+   ["JBO","Jumbo"],
+   ["SB","Sacar basura"],
+   ["SC","Sacudir"],
+   ["TP","Trapear"]
+ ]},
+ {n:"Samara",c:"#8B008B",i:[
+   ["HF","Hora feliz"],
+   ["HS","Hablar con Samara"],
+   ["TS","Tomar con Samara"],
+   ["VS","Videos con Samara"]
+ ]}
+];
+const url = txt =>
+ `shortcuts://x-callback-url/run-shortcut?name=${encodeURIComponent(ATAJO)}&input=text&text=${encodeURIComponent(txt)}`;
+const feedback = el =>{
+ el.classList.add("press");
+ setTimeout(()=>el.classList.remove("press"),90);
+};
+const modal = document.getElementById("minModal");
+const box = modal.querySelector(".box");
+const title = document.getElementById("minTitle");
+const input = document.getElementById("minInput");
+const ok = document.getElementById("minOk");
+const cancel = document.getElementById("minCancel");
+let currentLabel = "";
+function pedirMinutos(label){
+ currentLabel = label;
+ title.textContent = label;
+ input.value = "";
+ modal.classList.add("show");
+ setTimeout(()=>input.focus(),40);
+}
+ok.onclick = ()=>{
+ const raw = input.value.replace(/\D+/g,"");
+ if(!raw) return;
+ feedback(ok);
+ modal.classList.remove("show");
+ location.href = url(`${currentLabel} ${raw}`);
+};
+cancel.onclick = ()=> modal.classList.remove("show");
+input.addEventListener("keydown",e=>{
+ if(e.key==="Enter") ok.click();
+});
+modal.addEventListener("click",()=>modal.classList.remove("show"));
+box.addEventListener("click",e=>e.stopPropagation());
+const menu = document.getElementById("menu");
+let timer = null;
+DATA.forEach(cat=>{
+ menu.insertAdjacentHTML("beforeend",`<h2>${cat.n}</h2>`);
+ const list = document.createElement("div");
+ list.className="list";
+ cat.i.forEach(([abbr,label])=>{
+   const b=document.createElement("button");
+   b.className="card";
+   b.style.setProperty("--c",cat.c);
+   b.textContent=abbr;
+   b.onclick=()=>location.href=url(label);
+   b.addEventListener("touchstart",()=>{
+     timer=setTimeout(()=>{
+       feedback(b);
+       pedirMinutos(label);
+     },LONG_PRESS_MS);
+   },{passive:true});
+   ["touchend","touchcancel","touchmove"].forEach(ev=>{
+     b.addEventListener(ev,()=>clearTimeout(timer),{passive:true});
+   });
+   list.appendChild(b);
+ });
+ menu.appendChild(list);
+});
+</script>
+</body>
+</html>
