@@ -19,8 +19,24 @@ body{
 @media(prefers-color-scheme:dark){
  body{background:#1c1c1e;color:#fff}
 }
+
+/* Título principal */
+.main-title{
+ text-align:center;
+ font-size:28px;
+ font-weight:900;
+ letter-spacing:2px;
+ margin:4px 0 18px;
+}
+
 /* Títulos de secciones */
-h2{text-align:center;margin:10px 0 8px;font-size:16px;font-weight:800}
+h2{
+ text-align:center;
+ margin:10px 0 8px;
+ font-size:16px;
+ font-weight:800
+}
+
 /* Grid */
 .list{
  display:grid;
@@ -28,6 +44,7 @@ h2{text-align:center;margin:10px 0 8px;font-size:16px;font-weight:800}
  gap:8px;
  margin-bottom:16px
 }
+
 /* Botones */
 .card{
  height:40px;
@@ -46,6 +63,7 @@ h2{text-align:center;margin:10px 0 8px;font-size:16px;font-weight:800}
  .card{background:#2c2c2e;border-color:var(--c,#3a3a3c)}
  .card:active{background:#3a3a3c}
 }
+
 /* Modal minutos */
 #minModal{
  position:fixed;
@@ -97,7 +115,10 @@ h2{text-align:center;margin:10px 0 8px;font-size:16px;font-weight:800}
 </style>
 </head>
 <body>
+
+<h1 class="main-title">DIARIO</h1>
 <div id="menu"></div>
+
 <!-- Modal minutos -->
 <div id="minModal">
 <div class="box">
@@ -109,9 +130,11 @@ h2{text-align:center;margin:10px 0 8px;font-size:16px;font-weight:800}
 </div>
 </div>
 </div>
+
 <script>
 const ATAJO = "Diario";
 const LONG_PRESS_MS = 450;
+
 const DATA = [
  {n:"Personal",c:"#8B0000",i:[
    ["XX","ESCRIBIR"],
@@ -172,19 +195,24 @@ const DATA = [
    ["VS","Videos con Samara"]
  ]}
 ];
+
 const url = txt =>
  `shortcuts://x-callback-url/run-shortcut?name=${encodeURIComponent(ATAJO)}&input=text&text=${encodeURIComponent(txt)}`;
+
 const feedback = el =>{
  el.classList.add("press");
  setTimeout(()=>el.classList.remove("press"),90);
 };
+
 const modal = document.getElementById("minModal");
 const box = modal.querySelector(".box");
 const title = document.getElementById("minTitle");
 const input = document.getElementById("minInput");
 const ok = document.getElementById("minOk");
 const cancel = document.getElementById("minCancel");
+
 let currentLabel = "";
+
 function pedirMinutos(label){
  currentLabel = label;
  title.textContent = label;
@@ -192,6 +220,7 @@ function pedirMinutos(label){
  modal.classList.add("show");
  setTimeout(()=>input.focus(),40);
 }
+
 ok.onclick = ()=>{
  const raw = input.value.replace(/\D+/g,"");
  if(!raw) return;
@@ -199,37 +228,49 @@ ok.onclick = ()=>{
  modal.classList.remove("show");
  location.href = url(`${currentLabel} ${raw}`);
 };
+
 cancel.onclick = ()=> modal.classList.remove("show");
+
 input.addEventListener("keydown",e=>{
  if(e.key==="Enter") ok.click();
 });
+
 modal.addEventListener("click",()=>modal.classList.remove("show"));
 box.addEventListener("click",e=>e.stopPropagation());
+
 const menu = document.getElementById("menu");
 let timer = null;
+
 DATA.forEach(cat=>{
  menu.insertAdjacentHTML("beforeend",`<h2>${cat.n}</h2>`);
  const list = document.createElement("div");
  list.className="list";
+
  cat.i.forEach(([abbr,label])=>{
    const b=document.createElement("button");
    b.className="card";
    b.style.setProperty("--c",cat.c);
    b.textContent=abbr;
+
    b.onclick=()=>location.href=url(label);
+
    b.addEventListener("touchstart",()=>{
      timer=setTimeout(()=>{
        feedback(b);
        pedirMinutos(label);
      },LONG_PRESS_MS);
    },{passive:true});
+
    ["touchend","touchcancel","touchmove"].forEach(ev=>{
      b.addEventListener(ev,()=>clearTimeout(timer),{passive:true});
    });
+
    list.appendChild(b);
  });
+
  menu.appendChild(list);
 });
 </script>
+
 </body>
 </html>
